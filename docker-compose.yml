@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # --- Frontend Angular ---
+  frontend:
+    build: ./frontend
+    container_name: ev3-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ev3-network
+
+  # --- Backend FastAPI ---
+  backend:
+    build: ./backend
+    container_name: ev3-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - app-pagos
+      - app-notificaciones
+    restart: unless-stopped
+    networks:
+      - ev3-network
+
+  # --- Microservicio de Pagos (del profesor) ---
+  app-pagos:
+    build: ./microservicio-pagos
+    container_name: app-pagos
+    ports:
+      - "8002:8002"
+    environment:
+      - MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
+      - MP_PUBLIC_KEY=${MP_PUBLIC_KEY}
+      - MP_WEBHOOK_URL=${MP_WEBHOOK_URL}
+      - MP_SUCCESS_URL=${MP_SUCCESS_URL}
+      - MP_FAILURE_URL=${MP_FAILURE_URL}
+      - MP_PENDING_URL=${MP_PENDING_URL}
+    restart: unless-stopped
+    networks:
+      - ev3-network
+
+  # --- Microservicio de Notificaciones (Eval 3 - EC2) ---
+  app-notificaciones:
+    build: ./microservicio-notificaciones
+    container_name: app-notificaciones
+    ports:
+      - "8001:8001"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_SES_REGION=${AWS_SES_REGION}
+      - SES_SENDER_EMAIL=${SES_SENDER_EMAIL}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - TWILIO_WHATSAPP_NUMBER=${TWILIO_WHATSAPP_NUMBER}
+    restart: unless-stopped
+    networks:
+      - ev3-network
+
+networks:
+  ev3-network:
+    driver: bridge

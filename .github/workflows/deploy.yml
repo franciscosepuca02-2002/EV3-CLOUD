@@ -1,0 +1,154 @@
+name: CI/CD - Build & Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-2
+
+jobs:
+  build-and-push:
+    name: Build Images & Push to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push Backend
+        run: |
+          IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ev3-cloud/backend:latest
+          docker build -t $IMAGE ./backend
+          docker push $IMAGE
+
+      - name: Build & Push Microservicio Pagos
+        run: |
+          IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ev3-cloud/microservicio-pagos:latest
+          docker build -t $IMAGE ./microservicio-pagos
+          docker push $IMAGE
+
+      - name: Build & Push Microservicio Notificaciones
+        run: |
+          IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ev3-cloud/microservicio-notificaciones:latest
+          docker build -t $IMAGE ./microservicio-notificaciones
+          docker push $IMAGE
+
+      - name: Build & Push Frontend
+        run: |
+          IMAGE=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/ev3-cloud/frontend:latest
+          docker build -t $IMAGE ./frontend
+          docker push $IMAGE
+
+  deploy:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            # Login to ECR
+            aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+
+            # Pull latest images
+            ECR=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+            docker pull $ECR/ev3-cloud/backend:latest
+            docker pull $ECR/ev3-cloud/microservicio-pagos:latest
+            docker pull $ECR/ev3-cloud/microservicio-notificaciones:latest
+            docker pull $ECR/ev3-cloud/frontend:latest
+
+            # Go to project directory
+            cd ~/EV3-CLOUD
+
+            # Stop current containers
+            docker compose down || true
+
+            # Update docker-compose to use ECR images
+            cat > docker-compose.prod.yml << 'COMPOSE_EOF'
+            version: '3.8'
+
+            services:
+              frontend:
+                image: ${ECR_REGISTRY}/ev3-cloud/frontend:latest
+                container_name: ev3-frontend
+                ports:
+                  - "80:80"
+                depends_on:
+                  - backend
+                restart: unless-stopped
+                networks:
+                  - ev3-network
+
+              backend:
+                image: ${ECR_REGISTRY}/ev3-cloud/backend:latest
+                container_name: ev3-backend
+                ports:
+                  - "8000:8000"
+                env_file:
+                  - .env
+                depends_on:
+                  - app-pagos
+                  - app-notificaciones
+                restart: unless-stopped
+                networks:
+                  - ev3-network
+
+              app-pagos:
+                image: ${ECR_REGISTRY}/ev3-cloud/microservicio-pagos:latest
+                container_name: app-pagos
+                ports:
+                  - "8002:8002"
+                env_file:
+                  - .env
+                restart: unless-stopped
+                networks:
+                  - ev3-network
+
+              app-notificaciones:
+                image: ${ECR_REGISTRY}/ev3-cloud/microservicio-notificaciones:latest
+                container_name: app-notificaciones
+                ports:
+                  - "8001:8001"
+                env_file:
+                  - .env
+                restart: unless-stopped
+                networks:
+                  - ev3-network
+
+            networks:
+              ev3-network:
+                driver: bridge
+            COMPOSE_EOF
+
+            # Export ECR registry for compose
+            export ECR_REGISTRY=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
+
+            # Start services
+            docker compose -f docker-compose.prod.yml up -d
+
+            # Clean up old images
+            docker image prune -f
+
+            echo "✅ Deploy completado exitosamente"
