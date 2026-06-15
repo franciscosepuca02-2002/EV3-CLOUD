@@ -6,7 +6,7 @@ Endpoints del microservicio de pagos:
   POST /pagos/crear           → crea preferencia checkout (redirige a Mercado Pago)
   POST /pagos/directo/procesar → pago directo con datos de tarjeta
   GET  /pagos/{id}/estado     → consultar estado
-  POST /pagos/webhook         → webhook de Mercado Pago
+  POST /pagos/webhook         → webhook de Mercado Pago 
 """
 from datetime import datetime
 
