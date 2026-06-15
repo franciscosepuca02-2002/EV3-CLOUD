@@ -17,7 +17,7 @@ import { AuthService } from './services/auth.service';
         <div class="row">
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="d-flex align-items-center gap-2 mb-2">
-              <span style="background: linear-gradient(135deg, #818cf8, #06b6d4); border-radius: 8px; padding: 5px 8px; display: inline-flex;">
+              <span style="background: var(--brand-gradient); border-radius: 8px; padding: 5px 8px; display: inline-flex;">
                 <i class="bi bi-cloud-fill text-white"></i>
               </span>
               <span class="fw-bold text-white">EV3 Cloud Store</span>
@@ -55,6 +55,6 @@ import { AuthService } from './services/auth.service';
     </footer>
   `
 })
-export class AppComponent {
+export class App {
   constructor(public auth: AuthService) {}
 }
