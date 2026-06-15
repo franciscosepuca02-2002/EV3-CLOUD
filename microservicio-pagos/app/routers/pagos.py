@@ -124,7 +124,7 @@ def crear_pago_checkout(payload: PagoCreateCheckoutRequest):
 
     preference_response = sdk.preference().create(preference_data)
     body = preference_response.get("response", {})
-    init_point = body.get("init_point")
+    init_point = body.get("sandbox_init_point") or body.get("init_point")
     preference_id = body.get("id")
     if preference_response.get("status") not in (200, 201) or not init_point:
         raise HTTPException(status_code=502, detail="No fue posible crear preferencia en Mercado Pago")
