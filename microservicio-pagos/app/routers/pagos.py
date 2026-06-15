@@ -119,8 +119,9 @@ def crear_pago_checkout(payload: PagoCreateCheckoutRequest):
         "external_reference": external_reference,
         "back_urls": {"success": MP_SUCCESS_URL, "failure": MP_FAILURE_URL, "pending": MP_PENDING_URL},
         "auto_return": "approved",
-        "notification_url": MP_WEBHOOK_URL,
     }
+    if MP_WEBHOOK_URL:
+        preference_data["notification_url"] = MP_WEBHOOK_URL
 
     preference_response = sdk.preference().create(preference_data)
     body = preference_response.get("response", {})
