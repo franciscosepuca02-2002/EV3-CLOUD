@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-payment-result',
@@ -17,6 +17,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
             <h2 class="fw-bold">¡Pago exitoso!</h2>
             <p class="text-muted mt-2">Tu compra ha sido procesada correctamente.</p>
             <p class="text-muted">Recibirás un correo con los detalles de tu compra y el pago.</p>
+            <p class="text-muted mt-2" style="font-size: 0.85rem;">
+              Te redirigiremos a la tienda en {{ countdown }}s...
+            </p>
           }
 
           @if (status === 'failure') {
@@ -48,12 +51,30 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
     </div>
   `
 })
-export class PaymentResultComponent implements OnInit {
+export class PaymentResultComponent implements OnInit, OnDestroy {
   status = '';
+  countdown = 5;
+  private timer?: ReturnType<typeof setInterval>;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     this.status = this.route.snapshot.data['status'] || 'pending';
+
+    if (this.status === 'success') {
+      this.timer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(this.timer);
+          this.router.navigate(['/products']);
+        }
+      }, 1000);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   }
 }
