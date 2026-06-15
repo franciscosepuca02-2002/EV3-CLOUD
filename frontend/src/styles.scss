@@ -1,7 +1,143 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
-body {
-    background-color: #f8f9fa;
-    font-family: 'Segoe UI', sans-serif;
+:root {
+  --ev3-primary: #4f46e5;
+  --ev3-primary-dark: #3730a3;
+  --ev3-primary-light: #818cf8;
+  --ev3-accent: #06b6d4;
+  --ev3-success: #10b981;
+  --ev3-danger: #ef4444;
+  --ev3-warning: #f59e0b;
+  --ev3-bg: #f1f5f9;
+  --ev3-card: #ffffff;
+  --ev3-text: #1e293b;
+  --ev3-muted: #64748b;
+  --ev3-border: #e2e8f0;
+  --ev3-gradient: linear-gradient(135deg, #4f46e5, #06b6d4);
 }
+
+body {
+  background-color: var(--ev3-bg);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--ev3-text);
+}
+
+/* Override Bootstrap primary */
+.btn-primary {
+  background: var(--ev3-gradient) !important;
+  border: none !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+}
+.btn-primary:disabled {
+  transform: none;
+  box-shadow: none;
+  opacity: 0.65;
+}
+
+.btn-outline-primary {
+  color: var(--ev3-primary) !important;
+  border-color: var(--ev3-primary) !important;
+}
+.btn-outline-primary:hover {
+  background: var(--ev3-primary) !important;
+  color: white !important;
+}
+
+.btn-success {
+  background: var(--ev3-success) !important;
+  border: none !important;
+  font-weight: 500;
+}
+.btn-success:hover {
+  background: #059669 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+}
+
+/* Cards */
+.card {
+  border: 1px solid var(--ev3-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Alerts */
+.alert {
+  border-radius: 10px;
+  border: none;
+  font-weight: 500;
+}
+.alert-success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+.alert-danger {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Tables */
+.table {
+  font-size: 0.93rem;
+}
+.table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--ev3-muted);
+}
+
+/* Progress bar */
+.progress {
+  border-radius: 50px;
+  background: var(--ev3-border);
+}
+
+/* Form controls */
+.form-control:focus {
+  border-color: var(--ev3-primary-light);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* Badge */
+.badge {
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 50px;
+}
+
+/* Page title */
+.page-title {
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--ev3-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.page-title i {
+  background: var(--ev3-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.8rem;
+}
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--ev3-bg); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

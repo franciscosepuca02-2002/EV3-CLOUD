@@ -8,37 +8,53 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [FormsModule, RouterLink],
   template: `
-    <div class="row justify-content-center">
-      <div class="col-md-5">
-        <div class="card shadow-sm">
-          <div class="card-body p-4 text-center">
-            <i class="bi bi-envelope-check" style="font-size: 48px; color: #0d6efd;"></i>
-            <h3 class="mt-3 mb-2">Verificar Cuenta</h3>
-            <p class="text-muted">Ingresa el código de 6 dígitos que enviamos a tu correo.</p>
+    <div class="row justify-content-center" style="margin-top: 5vh;">
+      <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+          <span style="background: linear-gradient(135deg, #818cf8, #06b6d4); border-radius: 16px; padding: 14px 18px; display: inline-flex;">
+            <i class="bi bi-envelope-check text-white" style="font-size: 2rem;"></i>
+          </span>
+          <h3 class="mt-3 fw-bold">Verificar Cuenta</h3>
+          <p class="text-muted">Ingresa el código de 6 dígitos que enviamos a tu correo</p>
+        </div>
 
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+          <div class="card-body p-4">
             @if (errorMsg) {
-              <div class="alert alert-danger">{{ errorMsg }}</div>
+              <div class="alert alert-danger d-flex align-items-center" style="font-size: 0.9rem;">
+                <i class="bi bi-exclamation-circle me-2"></i>{{ errorMsg }}
+              </div>
             }
             @if (successMsg) {
-              <div class="alert alert-success">{{ successMsg }}</div>
+              <div class="alert alert-success d-flex align-items-center" style="font-size: 0.9rem;">
+                <i class="bi bi-check-circle me-2"></i>{{ successMsg }}
+              </div>
             }
 
-            <div class="mb-3 text-start">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" [(ngModel)]="email">
-            </div>
             <div class="mb-3">
-              <input type="text" class="form-control form-control-lg text-center"
+              <label class="form-label fw-medium" style="font-size: 0.88rem;">Email</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                <input type="email" class="form-control border-start-0" [(ngModel)]="email">
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-medium" style="font-size: 0.88rem;">Código de verificación</label>
+              <input type="text" class="form-control form-control-lg text-center fw-bold"
                      [(ngModel)]="code" placeholder="000000" maxlength="6"
-                     style="letter-spacing: 12px; font-size: 24px;"
+                     style="letter-spacing: 14px; font-size: 1.8rem; border-radius: 12px; background: #f8fafc; border: 2px solid #e2e8f0;"
                      (keyup.enter)="verify()">
             </div>
-            <button class="btn btn-primary w-100" (click)="verify()" [disabled]="loading">
-              {{ loading ? 'Verificando...' : 'Verificar' }}
+            <button class="btn btn-primary w-100 py-2" (click)="verify()" [disabled]="loading" style="border-radius: 10px;">
+              @if (loading) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Verificando...
+              } @else {
+                <i class="bi bi-shield-check me-2"></i>Verificar
+              }
             </button>
-            <p class="mt-3"><a routerLink="/login">Volver al login</a></p>
           </div>
         </div>
+        <p class="text-center mt-3"><a routerLink="/login" style="color: var(--ev3-primary); text-decoration: none; font-weight: 500;">← Volver al login</a></p>
       </div>
     </div>
   `

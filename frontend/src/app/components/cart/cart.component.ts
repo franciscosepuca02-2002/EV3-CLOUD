@@ -8,64 +8,76 @@ import { ApiService } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <h2 class="mb-4"><i class="bi bi-cart3 me-2"></i>Mi Carrito</h2>
+    <div class="page-title">
+      <i class="bi bi-cart3"></i>
+      <span>Mi Carrito</span>
+    </div>
 
     @if (errorMsg) {
-      <div class="alert alert-danger">{{ errorMsg }}</div>
+      <div class="alert alert-danger d-flex align-items-center"><i class="bi bi-exclamation-circle me-2"></i>{{ errorMsg }}</div>
     }
 
     @if (cart.items.length === 0) {
       <div class="text-center py-5">
-        <i class="bi bi-cart-x" style="font-size: 64px; color: #ccc;"></i>
-        <p class="mt-3 text-muted">Tu carrito está vacío</p>
-        <a routerLink="/products" class="btn btn-primary">Ver productos</a>
+        <div style="background: #f1f5f9; border-radius: 50%; width: 100px; height: 100px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <i class="bi bi-cart-x" style="font-size: 40px; color: #94a3b8;"></i>
+        </div>
+        <h5 class="fw-bold">Tu carrito está vacío</h5>
+        <p class="text-muted">Agrega productos para comenzar</p>
+        <a routerLink="/products" class="btn btn-primary" style="border-radius: 10px;">
+          <i class="bi bi-shop me-1"></i>Ver productos
+        </a>
       </div>
     } @else {
-      <div class="card shadow-sm">
+      <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
-            <thead class="table-light">
+            <thead style="background: #f8fafc;">
               <tr>
-                <th>Producto</th>
-                <th class="text-center">Precio</th>
-                <th class="text-center">Cantidad</th>
-                <th class="text-center">Subtotal</th>
-                <th></th>
+                <th class="py-3 ps-4">Producto</th>
+                <th class="py-3 text-center">Precio</th>
+                <th class="py-3 text-center">Cantidad</th>
+                <th class="py-3 text-center">Subtotal</th>
+                <th class="py-3 pe-4"></th>
               </tr>
             </thead>
             <tbody>
               @for (item of cart.items; track item.id) {
                 <tr>
-                  <td class="align-middle">{{ item.name }}</td>
-                  <td class="text-center align-middle">\${{ item.price | number:'1.0-0' }}</td>
-                  <td class="text-center align-middle">{{ item.quantity }}</td>
-                  <td class="text-center align-middle fw-bold">\${{ item.subtotal | number:'1.0-0' }}</td>
-                  <td class="text-end align-middle">
-                    <button class="btn btn-outline-danger btn-sm" (click)="remove(item.id)">
+                  <td class="align-middle ps-4 fw-medium">{{ item.name }}</td>
+                  <td class="text-center align-middle text-muted">\${{ item.price | number:'1.0-0' }}</td>
+                  <td class="text-center align-middle">
+                    <span class="badge" style="background: #f1f5f9; color: var(--ev3-text); font-size: 0.9rem; padding: 6px 14px; border-radius: 8px;">{{ item.quantity }}</span>
+                  </td>
+                  <td class="text-center align-middle fw-bold" style="color: var(--ev3-primary);">\${{ item.subtotal | number:'1.0-0' }}</td>
+                  <td class="text-end align-middle pe-4">
+                    <button class="btn btn-sm" style="background: #fef2f2; color: var(--ev3-danger); border-radius: 8px;" (click)="remove(item.id)">
                       <i class="bi bi-trash"></i>
                     </button>
                   </td>
                 </tr>
               }
             </tbody>
-            <tfoot>
-              <tr class="table-primary">
-                <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
-                <td class="text-center fw-bold fs-5">\${{ cart.total | number:'1.0-0' }}</td>
-                <td></td>
-              </tr>
-            </tfoot>
           </table>
+        </div>
+        <div style="background: linear-gradient(135deg, #f0f9ff, #eff6ff); padding: 20px 24px; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+          <span class="text-muted fw-medium">Total:</span>
+          <span class="fw-bold" style="font-size: 1.5rem; background: var(--ev3-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            \${{ cart.total | number:'1.0-0' }}
+          </span>
         </div>
       </div>
 
       <div class="d-flex justify-content-between mt-4">
-        <button class="btn btn-outline-secondary" (click)="clearAll()">
+        <button class="btn btn-outline-secondary" style="border-radius: 10px;" (click)="clearAll()">
           <i class="bi bi-trash me-1"></i>Vaciar carrito
         </button>
-        <button class="btn btn-success btn-lg" (click)="checkout()" [disabled]="loading">
-          <i class="bi bi-credit-card me-1"></i>
-          {{ loading ? 'Procesando...' : 'Proceder al pago' }}
+        <button class="btn btn-success btn-lg px-4" (click)="checkout()" [disabled]="loading" style="border-radius: 12px;">
+          @if (loading) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Procesando...
+          } @else {
+            <i class="bi bi-credit-card me-2"></i>Proceder al pago
+          }
         </button>
       </div>
     }
@@ -78,9 +90,7 @@ export class CartComponent implements OnInit {
 
   constructor(private api: ApiService, private router: Router) {}
 
-  ngOnInit() {
-    this.loadCart();
-  }
+  ngOnInit() { this.loadCart(); }
 
   loadCart() {
     this.api.getCart().subscribe({
@@ -90,10 +100,7 @@ export class CartComponent implements OnInit {
   }
 
   remove(itemId: number) {
-    this.api.removeFromCart(itemId).subscribe({
-      next: () => this.loadCart(),
-      error: () => this.errorMsg = 'Error eliminando producto'
-    });
+    this.api.removeFromCart(itemId).subscribe({ next: () => this.loadCart(), error: () => this.errorMsg = 'Error eliminando producto' });
   }
 
   clearAll() {
@@ -103,31 +110,17 @@ export class CartComponent implements OnInit {
   checkout() {
     this.loading = true;
     this.errorMsg = '';
-
-    // 1. Crear orden
     this.api.createOrder().subscribe({
       next: (order) => {
-        // 2. Crear preferencia de pago (checkout de Mercado Pago)
         this.api.createCheckout(order.order_id).subscribe({
           next: (payment) => {
-            // 3. Redirigir a Mercado Pago
-            if (payment.url_pago) {
-              window.location.href = payment.url_pago;
-            } else {
-              this.errorMsg = 'No se pudo obtener URL de pago';
-              this.loading = false;
-            }
+            if (payment.url_pago) { window.location.href = payment.url_pago; }
+            else { this.errorMsg = 'No se pudo obtener URL de pago'; this.loading = false; }
           },
-          error: (err) => {
-            this.errorMsg = err.error?.detail || 'Error creando pago';
-            this.loading = false;
-          }
+          error: (err) => { this.errorMsg = err.error?.detail || 'Error creando pago'; this.loading = false; }
         });
       },
-      error: (err) => {
-        this.errorMsg = err.error?.detail || 'Error creando orden';
-        this.loading = false;
-      }
+      error: (err) => { this.errorMsg = err.error?.detail || 'Error creando orden'; this.loading = false; }
     });
   }
 }
